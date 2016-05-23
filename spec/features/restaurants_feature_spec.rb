@@ -20,14 +20,27 @@ feature 'restaurants' do
       expect(page).to_not have_content('No restaurants yet')
     end
   end
-    context 'create restaurant' do
-      scenario 'prompt user to fill out a form, then display the restaurant' do
-        visit '/restaurants'
-        click_link 'add a restaurant'
-        fill_in 'Name', with: 'KFC'
-        click_button 'Create Restaurant'
-        expect(page).to have_content ('KFC')
-        expect(current_path).to eq '/restaurants'
-      end
+
+  context 'create restaurant' do
+    scenario 'prompt user to fill out a form, then display the restaurant' do
+      visit '/restaurants'
+      click_link 'add a restaurant'
+      fill_in 'Name', with: 'KFC'
+      click_button 'Create Restaurant'
+      expect(page).to have_content ('KFC')
+      expect(current_path).to eq '/restaurants'
     end
+  end
+
+  context 'viewing restaurants' do
+
+    let!(:kfc){Restaurant.create(name:'KFC')}
+
+    scenario 'lets a user view a restaurant' do
+      visit '/restaurants'
+      click_link 'KFC'
+      expect(page).to have_content 'KFC'
+      expect(current_path).to eq "/restaurants/#{kfc.id}"
+    end
+  end
 end
