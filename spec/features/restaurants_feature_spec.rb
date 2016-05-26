@@ -106,10 +106,11 @@ feature 'restaurants' do
 
    context 'deleting restaurants' do
 
-     before { Restaurant.create name: 'KFC' }
-
      scenario 'cant delete a restaurant when logged out' do
        visit '/restaurants'
+       sign_up
+       create_restaurant
+       click_link('Sign out')
        click_link('KFC')
        click_link 'Delete KFC'
        expect(page).to have_content 'You need to sign in or sign up before continuing'
@@ -119,6 +120,7 @@ feature 'restaurants' do
      scenario 'removes a restaurant when user clicks a delete link' do
        sign_up
        visit '/restaurants'
+       create_restaurant
        click_link('KFC')
        click_link 'Delete KFC'
        expect(page).not_to have_content 'KFC'

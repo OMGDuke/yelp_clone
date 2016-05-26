@@ -20,7 +20,7 @@ class RestaurantsController < ApplicationController
   end
 
   def restaurant_params
-    params.require(:restaurant).permit(:name)
+    params.require(:restaurant).permit(:name).merge(user: current_user)
   end
 
   def show
@@ -29,6 +29,10 @@ class RestaurantsController < ApplicationController
 
   def edit
     @restaurant = Restaurant.find(params[:id])
+    if !@restaurant.belongs_to_user?(current_user)
+      flash[:notice] = 'Can only edit your own restaurants'
+      redirect_to restaurants_path
+    end
   end
 
   def update
@@ -43,7 +47,7 @@ class RestaurantsController < ApplicationController
       @restaurant.destroy
       flash[:notice] = 'Restaurant deleted successfully'
     else
-      flash[:notice] = 'Can only edit your own restaurants'
+      flash[:notice] = 'Can only delete your own restaurants'
       # redirect_to '/restaurants'
     end
     redirect_to restaurants_path
