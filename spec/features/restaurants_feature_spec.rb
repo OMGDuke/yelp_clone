@@ -35,9 +35,7 @@ feature 'restaurants' do
      scenario 'prompts user to fill out a form, then displays the new restaurant' do
        visit '/restaurants'
        sign_up
-       click_link 'Add a restaurant'
-       fill_in 'Name', with: 'KFC'
-       click_button 'Create Restaurant'
+       create_restaurant
        expect(page).to have_content 'KFC'
        expect(current_path).to eq '/restaurants'
      end
@@ -70,15 +68,38 @@ feature 'restaurants' do
 
    context 'editing restaurants' do
 
-     before { Restaurant.create name: 'KFC' }
+     scenario 'cant edit a restaurant when logged out' do
+       visit '/restaurants'
+       sign_up
+       create_restaurant
+       click_link('Sign out')
+       click_link('KFC')
+       click_link 'Edit KFC'
+       expect(page).to have_content 'You need to sign in or sign up before continuing'
+       expect(current_path).to eq '/users/sign_in'
+     end
 
      scenario 'let a user edit a restaurant' do
        visit '/restaurants'
        sign_up
+       create_restaurant
+       click_link('KFC')
        click_link  'Edit KFC'
        fill_in 'Name', with: 'Kentucky Fried Chicken'
        click_button 'Update Restaurant'
        expect(page).to have_content 'Kentucky Fried Chicken'
+       expect(current_path).to eq '/restaurants'
+     end
+
+     scenario 'user cannot edit another users restaurant' do
+       visit '/restaurants'
+       sign_up
+       create_restaurant
+       click_link('Sign out')
+       sign_up_2
+       click_link('KFC')
+       click_link('Edit KFC')
+       expect(page).to have_content 'Can only edit your own restaurants'
        expect(current_path).to eq '/restaurants'
      end
    end
@@ -87,12 +108,33 @@ feature 'restaurants' do
 
      before { Restaurant.create name: 'KFC' }
 
+     scenario 'cant delete a restaurant when logged out' do
+       visit '/restaurants'
+       click_link('KFC')
+       click_link 'Delete KFC'
+       expect(page).to have_content 'You need to sign in or sign up before continuing'
+       expect(current_path).to eq '/users/sign_in'
+     end
+
      scenario 'removes a restaurant when user clicks a delete link' do
        sign_up
        visit '/restaurants'
+       click_link('KFC')
        click_link 'Delete KFC'
        expect(page).not_to have_content 'KFC'
        expect(page).to have_content 'Restaurant deleted successfully'
+     end
+
+     scenario 'user cannot delete another users restaurant' do
+       visit '/restaurants'
+       sign_up
+       create_restaurant
+       click_link('Sign out')
+       sign_up_2
+       click_link('KFC')
+       click_link('Delete KFC')
+       expect(page).to have_content 'Can only delete your own restaurants'
+       expect(current_path).to eq '/restaurants'
      end
    end
 
